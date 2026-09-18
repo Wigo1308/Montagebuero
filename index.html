@@ -4479,16 +4479,21 @@ function oeffnePassendesAufmass(orderId){
 function druckeLeerHeader(titel){
   return `
     <h1>${titel}</h1>
-    <table style="width:100%; border-collapse:collapse; margin-bottom:18px;">
-      <tr><td style="padding:4px 0; width:110px;">Kunde:</td><td style="border-bottom:1px solid #999;">&nbsp;</td></tr>
-      <tr><td style="padding:4px 0;">Adresse:</td><td style="border-bottom:1px solid #999;">&nbsp;</td></tr>
-      <tr><td style="padding:4px 0;">Datum:</td><td style="border-bottom:1px solid #999; width:200px;">&nbsp;</td><td style="padding:4px 0 4px 20px;">Mitarbeiter:</td><td style="border-bottom:1px solid #999;">&nbsp;</td></tr>
-    </table>
+    <div class="druck-kopf">
+      <div class="druck-kopf-zeile"><span class="druck-kopf-label">Kunde</span><span class="druck-blankofeld" style="min-width:260px;"></span></div>
+      <div class="druck-kopf-zeile"><span class="druck-kopf-label">Adresse</span><span class="druck-blankofeld" style="min-width:260px;"></span></div>
+      <div class="druck-kopf-zeile"><span class="druck-kopf-label">Datum</span><span class="druck-blankofeld" style="min-width:150px;"></span><span class="druck-kopf-label" style="margin-left:20px;">Mitarbeiter</span><span class="druck-blankofeld" style="min-width:150px;"></span></div>
+    </div>
   `;
 }
 
 function druckeLeerZeile(label, hinweis){
-  return `<tr><td style="padding:6px 4px; width:280px; vertical-align:top;">${esc(label)}${hinweis ? `<br><span style="font-size:10px; color:#666;">${esc(hinweis)}</span>` : ''}:</td><td style="border-bottom:1px solid #999;">&nbsp;</td></tr>`;
+  return `
+    <div class="druck-feld">
+      <div class="druck-feld-label">${esc(label)}${hinweis ? `<span class="druck-feld-hinweis">${esc(hinweis)}</span>` : ''}</div>
+      <div class="druck-blankofeld"></div>
+    </div>
+  `;
 }
 
 function oeffneDruckfenster(titel, inhaltHtml){
@@ -4496,7 +4501,22 @@ function oeffneDruckfenster(titel, inhaltHtml){
   if(!win) return;
   win.document.write(`<!DOCTYPE html><html><head><title>${titel}</title>
     <meta charset="utf-8">
-    <style>body{font-family:Arial,sans-serif; padding:28px; color:#222;} h1{margin-bottom:16px; font-size:20px;} h3{margin:22px 0 8px 0; font-size:14px; border-bottom:1px solid #999; padding-bottom:4px;} table{font-size:12.5px;}</style>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap');
+      *{box-sizing:border-box;}
+      body{font-family:'Work Sans', Arial, sans-serif; padding:32px; color:#2B2620; background:#FAF6EE;}
+      h1{font-family:'Oswald', sans-serif; font-weight:600; font-size:24px; color:#2B2620; margin:0 0 18px 0; letter-spacing:0.3px;}
+      h3{font-family:'Oswald', sans-serif; font-weight:600; font-size:15px; color:#B9701D; text-transform:uppercase; letter-spacing:0.4px; margin:26px 0 12px 0; padding-bottom:6px; border-bottom:2px solid #B9701D;}
+      .druck-kopf{background:#fff; border:1px solid #C6B692; border-radius:6px; padding:14px 16px; margin-bottom:22px;}
+      .druck-kopf-zeile{display:flex; align-items:baseline; gap:8px; padding:4px 0;}
+      .druck-kopf-label{font-weight:600; color:#726A5B; font-size:12.5px; min-width:75px;}
+      .druck-feld{background:#fff; border:1px solid #C6B692; border-radius:6px; padding:8px 12px; margin-bottom:8px;}
+      .druck-feld-label{font-weight:600; font-size:12.5px; color:#2B2620; margin-bottom:2px;}
+      .druck-feld-hinweis{display:block; font-weight:400; font-size:10.5px; color:#726A5B; margin-top:1px;}
+      .druck-blankofeld{border-bottom:1px solid #C6B692; min-height:20px; display:block;}
+      .druck-notiz{background:#fff; border:1px solid #C6B692; border-radius:6px; min-height:80px; margin-top:6px;}
+      @media print{ body{background:#fff;} .druck-kopf,.druck-feld,.druck-notiz{border-color:#999;} }
+    </style>
     </head><body>${inhaltHtml}</body></html>`);
   win.document.close();
   win.focus();
@@ -4506,7 +4526,7 @@ function oeffneDruckfenster(titel, inhaltHtml){
 function druckeLeeresAufmassRollladen(){
   const positionsBlock = (nr) => `
     <h3>Position ${nr}</h3>
-    <table style="width:100%; border-collapse:collapse;">
+    <div>
       ${druckeLeerZeile('Bezeichnung', 'z. B. Fenster Wohnzimmer')}
       ${druckeLeerZeile('Maße', 'z. B. B 120 x H 60 cm')}
       ${druckeLeerZeile('Material', 'Aluminium / Kunststoff')}
@@ -4514,16 +4534,16 @@ function druckeLeeresAufmassRollladen(){
       ${druckeLeerZeile('Stopper', 'Ja / Nein')}
       ${druckeLeerZeile('Farbe')}
       ${druckeLeerZeile('Bemerkung', 'Besonderheiten')}
-    </table>
+    </div>
   `;
   const inhalt = [1,2,3,4].map(positionsBlock).join('') + `
     <h3>Einschätzung für die Montage</h3>
-    <table style="width:100%; border-collapse:collapse;">
+    <div>
       ${druckeLeerZeile('Geschätzter Montageaufwand', 'z. B. ca. 3 Stunden')}
       ${druckeLeerZeile('Besondere Tätigkeiten', 'z. B. Acrylarbeiten nötig')}
-    </table>
+    </div>
     <h3>Notizen zum Aufmaß</h3>
-    <div style="border:1px solid #999; min-height:70px; margin-top:6px;"></div>
+    <div class="druck-notiz"></div>
   `;
   oeffneDruckfenster('Aufmaß Rollladen – Leerformular', druckeLeerHeader('Aufmaß Rollladen') + inhalt);
 }
@@ -4531,18 +4551,18 @@ function druckeLeeresAufmassRollladen(){
 function druckeLeeresAufmassTuchwechsel(){
   const positionsBlock = (nr) => `
     <h3>Position ${nr}</h3>
-    <table style="width:100%; border-collapse:collapse;">
+    <div>
       ${druckeLeerZeile('Breite (mm)')}
       ${druckeLeerZeile('Ausfall (mm)')}
       ${druckeLeerZeile('Stoff-Nummer')}
       ${druckeLeerZeile('Volantform', 'gerade / kleine Welle / lange Welle')}
       ${druckeLeerZeile('Magnetkrallenkeder', 'Ja / Nein')}
       ${druckeLeerZeile('Bemerkung')}
-    </table>
+    </div>
   `;
   const inhalt = [1,2,3,4].map(positionsBlock).join('') + `
     <h3>Notizen zum Aufmaß</h3>
-    <div style="border:1px solid #999; min-height:70px; margin-top:6px;"></div>
+    <div class="druck-notiz"></div>
   `;
   oeffneDruckfenster('Aufmaß Tuchwechsel – Leerformular', druckeLeerHeader('Aufmaß Tuchwechsel') + inhalt);
 }
@@ -4550,7 +4570,7 @@ function druckeLeeresAufmassTuchwechsel(){
 function druckeLeeresAufmassMarkise(){
   const positionsBlock = (nr) => `
     <h3>Anlage ${nr}</h3>
-    <table style="width:100%; border-collapse:collapse;">
+    <div>
       ${druckeLeerZeile('Markisentyp', 'z. B. G100')}
       ${druckeLeerZeile('Aufmaß (mm)')}
       ${druckeLeerZeile('Ausfall (mm)')}
@@ -4579,11 +4599,11 @@ function druckeLeeresAufmassMarkise(){
       ${druckeLeerZeile('Demontage Altmarkise?', 'Ja / Nein')}
       ${druckeLeerZeile('Geschätzter Zeitaufwand Strom', 'z. B. ca. 3 Stunden')}
       ${druckeLeerZeile('Sonstiges / Bemerkung')}
-    </table>
+    </div>
   `;
   const inhalt = [1,2].map(positionsBlock).join('') + `
     <h3>Notizen zum Aufmaß</h3>
-    <div style="border:1px solid #999; min-height:70px; margin-top:6px;"></div>
+    <div class="druck-notiz"></div>
   `;
   oeffneDruckfenster('Aufmaß Markise – Leerformular', druckeLeerHeader('Aufmaß Markise') + inhalt);
 }
